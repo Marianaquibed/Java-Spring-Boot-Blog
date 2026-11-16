@@ -30,13 +30,10 @@ public class AdminController {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    // Directorios donde se guardarán las imágenes (puedes definirlos en application.properties o usar rutas relativas)
+    // Directorios donde se guardarán las imágenes
     private final String UPLOAD_DIR = "public/uploads/images/";
     private final String PORTFOLIO_DIR = "public/uploads/portfolio/";
 
-    // ==========================================
-    // GESTIÓN DE IMÁGENES (/admin/images)
-    // ==========================================
     @GetMapping("/images")
     public String images(Model model) {
         List<Image> images = imageRepository.findAll();
@@ -53,22 +50,25 @@ public class AdminController {
 
         if (!file.isEmpty()) {
             try {
-                // Generar un nombre seguro y único para el archivo (equivalente al slugger + uniqid)
+                // Generar un nombre seguro y único para el archivo
                 String originalFilename = file.getOriginalFilename();
-                String safeFilename = originalFilename != null ? originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_") : "file";
+                String safeFilename = originalFilename != null ? originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_")
+                        : "file";
                 String newFilename = UUID.randomUUID().toString() + "_" + safeFilename;
 
                 // Crear los directorios si no existen
                 Path uploadPath = Paths.get(UPLOAD_DIR);
                 Path portfolioPath = Paths.get(PORTFOLIO_DIR);
-                if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
-                if (!Files.exists(portfolioPath)) Files.createDirectories(portfolioPath);
+                if (!Files.exists(uploadPath))
+                    Files.createDirectories(uploadPath);
+                if (!Files.exists(portfolioPath))
+                    Files.createDirectories(portfolioPath);
 
                 // Guardar archivo en el directorio de imágenes principal
                 Path filePath = uploadPath.resolve(newFilename);
                 Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-                // Copiar el archivo al directorio de portfolio (equivalente al Filesystem->copy de Symfony)
+                // Copiar el archivo al directorio de portfolio
                 Path portfolioFilePath = portfolioPath.resolve(newFilename);
                 Files.copy(filePath, portfolioFilePath, StandardCopyOption.REPLACE_EXISTING);
 
@@ -86,9 +86,6 @@ public class AdminController {
         return "redirect:/admin/images";
     }
 
-    // ==========================================
-    // GESTIÓN DE CATEGORÍAS (/admin/categories)
-    // ==========================================
     @GetMapping("/categories")
     public String categories(Model model) {
         List<Category> categories = categoryRepository.findAll();
@@ -98,7 +95,8 @@ public class AdminController {
     }
 
     @PostMapping("/categories")
-    public String createCategory(@Valid @ModelAttribute("category") Category category, BindingResult bindingResult, Model model) {
+    public String createCategory(@Valid @ModelAttribute("category") Category category, BindingResult bindingResult,
+            Model model) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("categories", categoryRepository.findAll());
             return "admin/categories"; // Recarga la vista con errores si falla la validación

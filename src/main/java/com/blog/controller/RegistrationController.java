@@ -11,9 +11,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.ServletException;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class RegistrationController {
@@ -24,47 +22,45 @@ public class RegistrationController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // Mostrar el formulario de registro (/register)
     @GetMapping("/register")
     public String registerForm(Model model) {
         model.addAttribute("user", new User());
-        return "registration/register"; // Renderiza templates/registration/register.html
+        return "registration/register";
     }
 
-    // Procesar el formulario de registro (POST /register)
     @PostMapping("/register")
     public String registerSubmit(
             @Valid @ModelAttribute("user") User user,
             BindingResult bindingResult,
-            String plainPassword,
-            HttpServletRequest request,
+            @RequestParam(value = "plainPassword", required = false) String plainPassword,
             Model model) {
 
         if (bindingResult.hasErrors()) {
+            System.out.println("Errores de validación en el registro:");
+            bindingResult.getAllErrors().forEach(error -> System.out.println("   - " + error.getDefaultMessage()));
             return "registration/register";
         }
 
-        // Cifrar la contraseña en texto plano (equivalente a hashPassword de Symfony)
-        if (plainPassword != null && !plainPassword.isEmpty()) {
-            user.setPassword(passwordEncoder.encode(plainPassword));
+        if (plainPassword == null || plainPassword.trim().isEmpty()) {
+            model.addAttribute("error", "La contraseña es obligatoria.");
+            return "registration/register";
         }
 
-        // Asignar rol por defecto si es necesario (ej: ROLE_USER)
+        user.setPassword(passwordEncoder.encode(plainPassword));
+
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
             user.setRoles("ROLE_USER");
         }
 
-        // Guardar el usuario en la base de datos
-        userRepository.save(user);
-
-        // Autenticación automática del usuario tras el registro (equivalente a $security->login)
         try {
-            request.login(user.getEmail(), plainPassword);
-        } catch (ServletException e) {
-            // Si falla el auto-login, redirigimos al login manual
-            return "redirect:/login";
+            userRepository.save(user);
+            System.out.println("¡Usuario guardado exitosamente en la BD!: " + user.getEmail());
+        } catch (Exception e) {
+            System.out.println("Error al guardar en MySQL: " + e.getMessage());
+            model.addAttribute("error", "No se pudo completar el registro. Es posible que el email ya esté en uso.");
+            return "registration/register";
         }
 
-        return "redirect:/"; // Redirige a la página principal tras registrarse e iniciar sesión
+        return "redirect:/login?registered";
     }
 }

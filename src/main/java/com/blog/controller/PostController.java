@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.UUID;
 
 @Controller
-@PreAuthorize("hasRole('USER')")
 public class PostController {
 
     @Autowired
@@ -46,16 +45,15 @@ public class PostController {
     private final String UPLOAD_DIR = "public/uploads/images/";
     private final String PORTFOLIO_DIR = "public/uploads/portfolio/";
 
-    // ==========================================
-    // NUEVO POST (/blog/new)
-    // ==========================================
     @GetMapping("/blog/new")
+    @PreAuthorize("isAuthenticated()")
     public String newPostForm(Model model) {
         model.addAttribute("post", new Post());
         return "blog/new_post";
     }
 
     @PostMapping("/blog/new")
+    @PreAuthorize("isAuthenticated()")
     public String newPostSubmit(
             @ModelAttribute("post") Post post,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
@@ -65,13 +63,16 @@ public class PostController {
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
                 String originalFilename = imageFile.getOriginalFilename();
-                String safeFilename = originalFilename != null ? originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_") : "file";
+                String safeFilename = originalFilename != null ? originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_")
+                        : "file";
                 String newFilename = UUID.randomUUID().toString() + "_" + safeFilename;
 
                 Path uploadPath = Paths.get(UPLOAD_DIR);
                 Path portfolioPath = Paths.get(PORTFOLIO_DIR);
-                if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
-                if (!Files.exists(portfolioPath)) Files.createDirectories(portfolioPath);
+                if (!Files.exists(uploadPath))
+                    Files.createDirectories(uploadPath);
+                if (!Files.exists(portfolioPath))
+                    Files.createDirectories(portfolioPath);
 
                 Path filePath = uploadPath.resolve(newFilename);
                 Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
@@ -86,11 +87,9 @@ public class PostController {
             }
         }
 
-        // Generar Slug básico a partir del título
         String slug = post.getTitle().toLowerCase().replaceAll("[^a-z0-9\\s]", "").replaceAll("\\s+", "-");
         post.setSlug(slug);
 
-        // Asignar usuario autenticado y valores iniciales
         User user = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
         post.setPostUser(user);
         post.setPublishedAt(LocalDateTime.now());
@@ -98,12 +97,9 @@ public class PostController {
         post.setNumComments(0);
 
         postRepository.save(post);
-        return "redirect:/blog/new";
+        return "redirect:/blog";
     }
 
-    // ==========================================
-    // VISTA DE UN SOLO POST (/single_post/{slug})
-    // ==========================================
     @GetMapping("/single_post/{slug}")
     public String singlePost(@PathVariable("slug") String slug, Model model) {
         Post post = postRepository.findAll().stream()
@@ -155,19 +151,17 @@ public class PostController {
         return "redirect:/single_post/" + slug;
     }
 
-    // ==========================================
-    // BÚSQUEDA DE POSTS (/blog/buscar/{page})
-    // ==========================================
-    @GetMapping({"/blog/buscar", "/blog/buscar/{page}"})
+    @GetMapping({ "/blog/buscar", "/blog/buscar/{page}" })
     public String buscar(
             @PathVariable(value = "page", required = false) Integer pageNum,
             @RequestParam(value = "searchTerm", defaultValue = "") String searchTerm,
             Model model) {
 
-        int page = (pageNum != null && pageNum > 0) ? pageNum - 1 : 0; // Spring Data usa páginas base 0
+        int page = (pageNum != null && pageNum > 0) ? pageNum - 1 : 0;
         Pageable pageable = PageRequest.of(page, POSTS_PER_PAGE);
 
-        Page<Post> postPage = postRepository.findByContentContainingIgnoreCaseOrderByPublishedAtDesc(searchTerm, pageable);
+        Page<Post> postPage = postRepository.findByContentContainingIgnoreCaseOrderByPublishedAtDesc(searchTerm,
+                pageable);
         List<Post> recents = postRepository.findTop5ByOrderByPublishedAtDesc();
 
         int totalPages = postPage.getTotalPages();
@@ -187,10 +181,7 @@ public class PostController {
         return "blog/blog";
     }
 
-    // ==========================================
-    // LISTADO Y PAGINACIÓN DE BLOG (/blog/{page})
-    // ==========================================
-    @GetMapping({"/blog", "/blog/{page}"})
+    @GetMapping({ "/blog", "/blog/{page}" })
     public String blogIndex(@PathVariable(value = "page", required = false) Integer pageNum, Model model) {
         int page = (pageNum != null && pageNum > 0) ? pageNum - 1 : 0;
         Pageable pageable = PageRequest.of(page, POSTS_PER_PAGE);
@@ -214,9 +205,6 @@ public class PostController {
         return "blog/blog";
     }
 
-    // ==========================================
-    // DAR LIKE AJAX (/single_post/{slug}/like)
-    // ==========================================
     @PostMapping("/single_post/{slug}/like")
     @ResponseBody
     public Map<String, Object> likePost(@PathVariable("slug") String slug) {

@@ -38,12 +38,6 @@ public class PageController {
         return "page/about"; // Renderiza templates/page/about.html
     }
 
-    // Ruta '/blog'
-    @GetMapping("/blog")
-    public String blog() {
-        return "page/blog"; // Renderiza templates/page/blog.html
-    }
-
     // Ruta GET para mostrar el formulario de contacto ('/contact')
     @GetMapping("/contact")
     public String contactForm(Model model) {
@@ -53,15 +47,13 @@ public class PageController {
 
     // Ruta POST para procesar el envío del formulario de contacto
     @PostMapping("/contact")
-    public String contactSubmit(@Valid @ModelAttribute("contact") Contact contact, BindingResult bindingResult, Model model) {
+    public String contactSubmit(@Valid @ModelAttribute("contact") Contact contact, BindingResult bindingResult,
+            Model model) {
         if (bindingResult.hasErrors()) {
-            return "page/contact"; // Si hay errores de validación, recarga el formulario
+            return "page/contact";
         }
-        
-        // Guarda el contacto usando el repositorio JPA
         contactRepository.save(contact);
-        
-        return "redirect:/thankyou"; // Redirección equivalente a redirectToRoute('thankyou')
+        return "redirect:/thankyou";
     }
 
     // Ruta '/thankyou'
