@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <!-- Fragmento parcial reutilizable equivalente al include de Twig -->
+    <div th:fragment="imageFragment" class="col-xs-12 col-sm-6 col-md-3">
+        <div class="sol">
+            <!-- Ruta de imagen adaptada para Spring Boot con th:src -->
+            <img class="img-responsive" th:src="@{'/uploads/images/' + ${image.file}}" th:alt="${image.file}">
+            <div class="behind">
+                <div class="head text-center">
+                    <ul class="list-inline">
+                        <li>
+                            <a class="gallery" th:href="@{'/uploads/images/' + ${image.file}}" data-toggle="tooltip"
+                                data-original-title="Quick View">
+                                <i class="fa fa-eye"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" data-toggle="tooltip" data-original-title="Click if you like it">
+                                <i class="fa fa-heart"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" data-toggle="tooltip" data-original-title="Download">
+                                <i class="fa fa-download"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" data-toggle="tooltip" data-original-title="More information">
+                                <i class="fa fa-info"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="row box-content">
+                    <ul class="list-inline text-center">
+                        <!-- Renderización de contadores con th:text -->
+                        <li><i class="fa fa-eye"></i> <span th:text="${image.numViews}">0</span></li>
+                        <li><i class="fa fa-heart"></i> <span th:text="${image.numLikes}">0</span></li>
+                        <li><i class="fa fa-download"></i> <span th:text="${image.numDownloads}">0</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

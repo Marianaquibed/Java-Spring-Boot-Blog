@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <!-- Fragmento parcial reutilizable para cada tarjeta de post en el listado -->
+    <div th:fragment="postFragment" class="col-xs-12 col-sm-12">
+        <div class="post">
+            <div class="post-heading">
+                <!-- Formato de fecha con Thymeleaf (#temporals) -->
+                <span th:text="${#temporals.format(post.publishedAt, 'dd MMMM')}">24 October</span>
+
+                <!-- Imagen del post con th:src -->
+                <img class="img-responsive" th:if="${post.image != null}" th:src="@{'/uploads/images/' + ${post.image}}"
+                    th:alt="${post.title}">
+            </div>
+
+            <div class="post-body">
+                <!-- Enlace al detalle del post utilizando el slug -->
+                <h3>
+                    <a th:href="@{'/single_post/' + ${post.slug}}">
+                        <strong th:text="${post.title}">Post Title</strong>
+                    </a>
+                </h3>
+                <hr>
+                <!-- Extracto del contenido limitado a 300 caracteres usando utilidades de Thymeleaf -->
+                <p th:text="${post.content != null ? #strings.abbreviate(post.content, 300) : ''}">Post content
+                    snippet...</p>
+            </div>
+
+            <div class="post-footer">
+                <a class="btn" th:href="@{'/single_post/' + ${post.slug}}">READ MORE...</a>
+                <span>
+                    <i class="fa fa-heart sr-icons"></i> <span th:text="${post.numLikes}">0</span>
+                    <i class="fa fa-comments sr-icons"></i> <span th:text="${post.numComments}">0</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

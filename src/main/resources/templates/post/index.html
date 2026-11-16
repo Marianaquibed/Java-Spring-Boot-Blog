@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <!-- Bloque de contenido inyectado en la plantilla base -->
+    <div th:fragment="content" class="example-wrapper"
+        style="margin: 4em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif;">
+        <style>
+            .example-wrapper code {
+                background: #F5F5F5;
+                padding: 2px 6px;
+            }
+        </style>
+
+        <h1>Hello <span th:text="${controllerName ?: 'PostController'}">PostController</span>! ✅</h1>
+
+        This friendly message is coming from:
+        <ul>
+            <li>Your Spring Boot controller at <code>src/main/java/com/blog/controller/PostController.java</code></li>
+            <li>Your Thymeleaf template at <code>src/main/resources/templates/post/index.html</code></li>
+        </ul>
+    </div>
+
+</body>
+
+</html>

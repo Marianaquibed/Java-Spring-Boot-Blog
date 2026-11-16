@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<body>
+
+    <!-- Bloque de contenido inyectado en la plantilla base -->
+    <div th:fragment="content" class="container" style="margin-top: 80px; margin-bottom: 50px;">
+        <div class="row">
+            <div class="col-xs-12 col-sm-6 col-sm-push-3">
+
+                <!-- Formulario de inicio de sesión de Spring Security (apunta por defecto a /login por POST) -->
+                <form th:action="@{/login}" method="post">
+
+                    <!-- Mensaje de error (enviado por el SecurityController que creamos) -->
+                    <div th:if="${error}" class="alert alert-danger" th:text="${error}">
+                        Credenciales incorrectas
+                    </div>
+
+                    <!-- Mensaje informativo de logout -->
+                    <div th:if="${message}" class="alert alert-success" th:text="${message}">
+                        Sesión cerrada
+                    </div>
+
+                    <!-- Si el usuario ya está logueado -->
+                    <div sec:authorize="isAuthenticated()" class="mb-3">
+                        You are logged in as <span sec:authentication="name">User</span>,
+                        <a th:href="@{/logout}">Logout</a>
+                    </div>
+
+                    <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="username">Email</label>
+                        <input type="email" id="username" name="username" class="form-control" autocomplete="email"
+                            required autofocus placeholder="Email address">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" class="form-control"
+                            autocomplete="current-password" required placeholder="Password">
+                    </div>
+
+                    <!-- Spring Security gestiona el CSRF de forma automática mediante tokens si está activo, 
+                     o se incluye implícitamente en peticiones POST -->
+
+                    <button class="btn btn-lg btn-primary btn-block sr-button" type="submit"
+                        style="width: 100%; margin-top: 15px;">
+                        Sign in
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

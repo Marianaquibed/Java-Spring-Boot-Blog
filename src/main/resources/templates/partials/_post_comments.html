@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <!-- Fragmento parcial reutilizable de comentarios -->
+    <!-- Nota: Si necesitas alternar clases pares/impares como en Twig (loop.index0), puedes usar iterStat.odd -->
+    <div th:fragment="commentFragment" class="comment"
+        th:classappend="${iterStat != null and iterStat.odd} ? 'alt-comment' : ''">
+
+        <!-- Nombre del autor del comentario -->
+        <h4 th:text="${comment.author}">Author Name</h4>
+
+        <span>
+            <i class="fa fa-star sr-icons"></i>
+            <i class="fa fa-star sr-icons"></i>
+            <i class="fa fa-star sr-icons"></i>
+            <i class="fa fa-star sr-icons"></i>
+            <i class="fa fa-star sr-icons"></i>
+        </span>
+
+        <!-- Formato de hora con Thymeleaf (#temporals) -->
+        <p class="time" th:text="${#temporals.format(comment.publishedAt, 'hh:mm a')}">12:00 PM</p>
+        <hr>
+
+        <!-- Contenido del comentario -->
+        <p th:text="${comment.content}">Comment text goes here...</p>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <!-- Fragmento parcial reutilizable para posts recientes -->
+    <div th:fragment="recentPostFragment" class="post">
+        <div class="post-heading">
+            <!-- Formato de fecha en mayúsculas usando utilidades de Thymeleaf (#temporals y #strings) -->
+            <span class="date" th:text="${#strings.toUpperCase(#temporals.format(recent.publishedAt, 'dd MMM'))}">24
+                OCT</span>
+
+            <!-- Imagen del post con operador ternario de respaldo (equivalente a ?? 'wedding.jpg') -->
+            <img class="img-responsive"
+                th:src="@{'/uploads/images/' + (${recent.image != null ? recent.image : 'wedding.jpg'})}"
+                alt="post's picture">
+        </div>
+
+        <div class="post-body">
+            <span>
+                <i class="fa fa-heart sr-icons"></i> <span th:text="${recent.numLikes}">0</span>
+                <i class="fa fa-comments sr-icons"></i> <span th:text="${recent.numComments}">0</span>
+            </span>
+            <h4 class="text-left">
+                <!-- Enlace al detalle del post utilizando el slug -->
+                <a th:href="@{'/single_post/' + ${recent.slug}}">
+                    <strong th:text="${recent.title}">Post Title</strong>
+                </a>
+            </h4>
+        </div>
+    </div>
+
+</body>
+
+</html>

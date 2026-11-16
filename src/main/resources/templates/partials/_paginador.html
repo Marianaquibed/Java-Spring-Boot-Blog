@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <!-- Fragmento reutilizable de paginación con Thymeleaf -->
+    <div th:fragment="paginator(ruta, paramName, paramValue)" th:if="${totalPages > 1}">
+
+        <!-- Cálculo de los límites de la ventana de paginación (ventana por defecto = 2) -->
+        <nav class="pager" aria-label="Paginación de posts" th:with="ventana=2, 
+                  desde=${page - ventana > 1 ? page - ventana : 1}, 
+                  hasta=${page + ventana < totalPages ? page + ventana : totalPages}">
+
+            <ul class="pagination">
+
+                <!-- Botón Anterior -->
+                <li class="pager-step" th:classappend="${page <= 1} ? 'disabled' : ''">
+                    <a th:if="${page > 1}"
+                        th:href="@{${ruta == 'blog_buscar' ? '/blog/buscar' : '/blog'}(page=${page - 1}, searchTerm=${paramValue})}">
+                        <i class="fa fa-arrow-left"></i><span class="pager-label">Anterior</span>
+                    </a>
+                    <span th:unless="${page > 1}" aria-disabled="true">
+                        <i class="fa fa-arrow-left"></i><span class="pager-label">Anterior</span>
+                    </span>
+                </li>
+
+                <!-- Primera página y puntos suspensivos iniciales -->
+                <li th:if="${desde > 1}">
+                    <a th:href="@{${ruta == 'blog_buscar' ? '/blog/buscar' : '/blog'}(page=1, searchTerm=${paramValue})}"
+                        aria-label="Página 1">1</a>
+                </li>
+                <li class="pager-gap" th:if="${desde > 2}" aria-hidden="true">
+                    <span>&hellip;</span>
+                </li>
+
+                <!-- Ventana de páginas alrededor de la actual (Generación dinámica con th:each) -->
+                <!-- Nota: En Thymeleaf el rango se puede simular o pasar una lista precalculada desde el controlador, 
+                 o iterar por un número de elementos si se gestiona el bucle. -->
+                <th:block th:each="i : ${#numbers.sequence(desde, hasta)}">
+                    <li th:class="${i == page} ? 'active' : ''">
+                        <span th:if="${i == page}" aria-current="page" th:text="${i}">1</span>
+                        <a th:unless="${i == page}"
+                            th:href="@{${ruta == 'blog_buscar' ? '/blog/buscar' : '/blog'}(page=${i}, searchTerm=${paramValue})}"
+                            th:text="${i}" aria-label="Página">1</a>
+                    </li>
+                </th:block>
+
+                <!-- Puntos suspensivos finales y última página -->
+                <li class="pager-gap" th:if="${hasta < totalPages - 1}" aria-hidden="true">
+                    <span>&hellip;</span>
+                </li>
+                <li th:if="${hasta < totalPages}">
+                    <a th:href="@{${ruta == 'blog_buscar' ? '/blog/buscar' : '/blog'}(page=${totalPages}, searchTerm=${paramValue})}"
+                        th:text="${totalPages}" aria-label="Página final">10</a>
+                </li>
+
+                <!-- Botón Siguiente -->
+                <li class="pager-step pager-next" th:classappend="${page >= totalPages} ? 'disabled' : ''">
+                    <a th:if="${page < totalPages}"
+                        th:href="@{${ruta == 'blog_buscar' ? '/blog/buscar' : '/blog'}(page=${page + 1}, searchTerm=${paramValue})}">
+                        <span class="pager-label">Siguiente</span><i class="fa fa-arrow-right"></i>
+                    </a>
+                    <span th:unless="${page < totalPages}" aria-disabled="true">
+                        <span class="pager-label">Siguiente</span><i class="fa fa-arrow-right"></i>
+                    </span>
+                </li>
+            </ul>
+
+            <p class="pager-status">Página <span th:text="${page}">1</span> de <span th:text="${totalPages}">10</span>
+            </p>
+        </nav>
+    </div>
+
+</body>
+
+</html>
