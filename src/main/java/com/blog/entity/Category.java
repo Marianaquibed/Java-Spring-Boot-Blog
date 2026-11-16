@@ -1,6 +1,7 @@
 package com.blog.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,10 +18,10 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Category name cannot be blank")
     @Column(nullable = false, length = 255)
     private String name;
 
-    // Relación OneToMany con la entidad Image
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
 
@@ -31,7 +32,6 @@ public class Category {
         this.name = name;
     }
 
-    // Métodos auxiliares para sincronizar la relación bidireccional con Image
     public void addImage(Image image) {
         images.add(image);
         image.setCategory(this);
@@ -39,6 +39,6 @@ public class Category {
 
     public void removeImage(Image image) {
         images.remove(image);
-        image.setCategory(null); // Corregido de setImageCategory a setCategory
+        image.setCategory(null);
     }
 }

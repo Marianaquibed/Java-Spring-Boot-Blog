@@ -1,6 +1,8 @@
 package com.blog.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,7 +11,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "user", uniqueConstraints = {
-    @UniqueConstraint(name = "UNIQ_IDENTIFIER_EMAIL", columnNames = {"email"})
+        @UniqueConstraint(name = "UNIQ_IDENTIFIER_EMAIL", columnNames = { "email" })
 })
 @Getter
 @Setter
@@ -19,28 +21,31 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Email is required")
+    @Email(message = "Please provide a valid email")
     @Column(nullable = false, length = 180, unique = true)
     private String email;
 
+    @NotBlank(message = "Name is required")
     @Column(nullable = false, length = 255)
     private String name;
 
-    // En JPA guardamos los roles como un String separado por comas o JSON, 
-    // por defecto almacenaremos una cadena simple como "ROLE_USER,ROLE_ADMIN"
     @Column(nullable = false)
     private String roles = "ROLE_USER";
 
     @Column(nullable = false)
     private String password;
 
-    // Relación OneToMany con Post (equivalente a mappedBy = "postUser")
     @OneToMany(mappedBy = "postUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
 
     public User() {
     }
 
-    // Métodos equivalentes para la gestión de roles asegurando que siempre tenga ROLE_USER
+    public String getUserIdentifier() {
+        return this.email;
+    }
+
     public List<String> getRolesList() {
         List<String> roleList = new ArrayList<>();
         if (this.roles != null && !this.roles.isEmpty()) {
@@ -58,7 +63,6 @@ public class User {
         this.roles = String.join(",", roleList);
     }
 
-    // Métodos auxiliares para sincronizar la relación bidireccional con Post
     public void addPost(Post post) {
         posts.add(post);
         post.setPostUser(this);

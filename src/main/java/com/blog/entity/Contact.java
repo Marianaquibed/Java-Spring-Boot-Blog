@@ -25,7 +25,7 @@ public class Contact {
     private String lastName;
 
     @NotBlank(message = "Field `email` is mandatory")
-    @Email(message = "{value} is not a valid email")
+    @Email(message = "Not a valid email")
     @Column(nullable = false, length = 255)
     private String email;
 
