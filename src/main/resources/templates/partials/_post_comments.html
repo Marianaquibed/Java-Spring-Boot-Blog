@@ -4,11 +4,9 @@
 <body>
 
     <!-- Fragmento parcial reutilizable de comentarios -->
-    <!-- Nota: Si necesitas alternar clases pares/impares como en Twig (loop.index0), puedes usar iterStat.odd -->
     <div th:fragment="commentFragment" class="comment"
         th:classappend="${iterStat != null and iterStat.odd} ? 'alt-comment' : ''">
 
-        <!-- Nombre del autor del comentario -->
         <h4 th:text="${comment.author}">Author Name</h4>
 
         <span>

@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
-    // Al igual que con Category, Spring Data JPA nos provee de todos los métodos CRUD básicos por defecto.
 }

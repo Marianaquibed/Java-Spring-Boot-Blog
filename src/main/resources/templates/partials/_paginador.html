@@ -34,8 +34,6 @@
                 </li>
 
                 <!-- Ventana de páginas alrededor de la actual (Generación dinámica con th:each) -->
-                <!-- Nota: En Thymeleaf el rango se puede simular o pasar una lista precalculada desde el controlador, 
-                 o iterar por un número de elementos si se gestiona el bucle. -->
                 <th:block th:each="i : ${#numbers.sequence(desde, hasta)}">
                     <li th:class="${i == page} ? 'active' : ''">
                         <span th:if="${i == page}" aria-current="page" th:text="${i}">1</span>
