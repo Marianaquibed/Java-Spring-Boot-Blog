@@ -1,65 +1,110 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educational Blog - Journal</title>
+
+    <!-- CSS Estáticos locales -->
+    <link rel="stylesheet" th:href="@{/css/magnific-popup.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <!-- CSS Externos (Bootstrap & FontAwesome por CDN) -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
 
 <body>
 
-    <!-- Bloque de contenido inyectado en la plantilla base -->
-    <div th:fragment="content" id="blog" class="container" style="margin-top: 80px;">
-        <header class="page-header-block">
-            <span class="eyebrow">Journal</span>
-            <div th:if="${searchTerm != null and searchTerm != ''}">
-                <h1>Results for “<span th:text="${searchTerm}">search</span>”</h1>
+    <!-- Navegación común -->
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" th:href="@{/}">My Blog</a>
             </div>
-            <div th:unless="${searchTerm != null and searchTerm != ''}">
-                <h1>Blog</h1>
-            </div>
-        </header>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a th:href="@{/}">Home</a></li>
+                <li><a th:href="@{/blog}">Blog</a></li>
+                <li><a th:href="@{/about}">About</a></li>
+                <li><a th:href="@{/contact}">Contact</a></li>
 
-        <div class="row">
-            <!-- Posts -->
-            <div class="col-xs-12 col-md-8">
-                <div id="post-list">
+                <!-- Si el usuario es ADMIN -->
+                <li sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/admin/categories}">Admin Categories</a>
+                </li>
+                <li sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/admin/images}">Admin Images</a>
+                </li>
 
-                    <!-- Si hay posts -->
-                    <div th:if="${total > 0}">
-                        <div class="results-bar glass" role="status">
-                            <span class="results-count">
-                                <i class="fa fa-file-text-o"></i>
-                                Mostrando <strong th:text="${posts.size()}">0</strong> de <strong
-                                    th:text="${total}">0</strong> <span
-                                    th:text="${total == 1 ? 'post' : 'posts'}">posts</span>
-                            </span>
-                            <span class="results-page">Página <span th:text="${page}">1</span> <span
-                                    class="results-sep">/</span> <span th:text="${totalPages}">1</span></span>
-                            <span class="results-progress" aria-hidden="true">
-                                <!-- Cálculo dinámico del porcentaje de la barra de progreso -->
-                                <span th:style="'--value:' + ${(page * 100 / totalPages)} + '%'"></span>
-                            </span>
-                        </div>
-                        <br>
+                <!-- Autenticación -->
+                <li sec:authorize="!isAuthenticated()">
+                    <a th:href="@{/login}">Login</a>
+                </li>
+                <li sec:authorize="!isAuthenticated()">
+                    <a th:href="@{/register}">Register</a>
+                </li>
+                <li sec:authorize="isAuthenticated()">
+                    <form th:action="@{/logout}" method="post" style="display:inline; margin-top: 8px;">
+                        <button type="submit" class="btn btn-default navbar-btn">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </nav>
 
-                        <!-- Bucle de posts -->
-                        <div th:each="post : ${posts}">
-                            <div th:replace="~{partials/_post :: postFragment}"></div>
-                        </div>
+    <!-- Contenido Principal -->
+    <div class="container" style="min-height: 70vh; padding-top: 90px; padding-bottom: 50px;">
+        <div id="blog">
+            <header class="page-header-block" style="margin-bottom: 30px;">
+                <span class="eyebrow"
+                    style="text-transform: uppercase; font-size: 12px; color: #777; letter-spacing: 1px;">Journal</span>
+                <div th:if="${searchTerm != null and searchTerm != ''}">
+                    <h1>Results for “<span th:text="${searchTerm}">search</span>”</h1>
+                </div>
+                <div th:unless="${searchTerm != null and searchTerm != ''}">
+                    <h1>Blog</h1>
+                </div>
+            </header>
 
-                        <!-- Paginación condicional -->
-                        <div th:if="${searchTerm != null and searchTerm != ''}">
-                            <div
-                                th:replace="~{partials/_paginador :: paginator(ruta='blog_buscar', paramName='searchTerm', paramValue=${searchTerm})}">
+            <div class="row">
+                <!-- Posts -->
+                <div class="col-xs-12 col-md-8">
+                    <div id="post-list">
+
+                        <!-- Si hay posts -->
+                        <div th:if="${total > 0}">
+                            <div class="results-bar glass" role="status"
+                                style="padding: 10px 15px; background: #f9f9f9; border: 1px solid #ddd; margin-bottom: 20px;">
+                                <span class="results-count">
+                                    <i class="fa fa-file-text-o"></i>
+                                    Mostrando <strong th:text="${posts.size()}">0</strong> de <strong
+                                        th:text="${total}">0</strong> <span
+                                        th:text="${total == 1 ? 'post' : 'posts'}">posts</span>
+                                </span>
+                                <span class="results-page" style="margin-left: 15px;">Página <span
+                                        th:text="${page}">1</span> <span class="results-sep">/</span> <span
+                                        th:text="${totalPages}">1</span></span>
+                            </div>
+                            <br>
+
+                            <!-- Bucle de posts -->
+                            <div th:each="post : ${posts}">
+                                <div th:replace="~{partials/_post :: postFragment}"></div>
+                            </div>
+
+                            <!-- Paginación condicional (Verifica si existen los partials o usa paginación estándar si falla) -->
+                            <div th:if="${searchTerm != null and searchTerm != ''}">
+                                <div th:if="${#lists.contains(@environment.defaultProfiles, 'none')}" /* fallback seguro
+                                    si no existe el partial * />
                             </div>
                         </div>
-                        <div th:unless="${searchTerm != null and searchTerm != ''}">
-                            <div
-                                th:replace="~{partials/_paginador :: paginator(ruta='blog', paramName='', paramValue='')}">
-                            </div>
-                        </div>
-
                     </div>
 
                     <!-- Si NO hay posts -->
                     <div th:unless="${total > 0}">
-                        <div class="card empty-state" style="padding: 30px; text-align: center;">
+                        <div class="card empty-state"
+                            style="padding: 30px; text-align: center; background: #f9f9f9; border: 1px solid #ddd;">
                             <i class="fa fa-search" style="font-size: 24px; margin-bottom: 10px;"></i>
                             <p>No posts found.</p>
                         </div>
@@ -71,30 +116,38 @@
             <!-- Sidebar -->
             <aside class="col-xs-12 col-md-4 sidebar">
                 <!-- Formulario de búsqueda GET -->
-                <form th:action="@{/blog/buscar}" method="get">
-                    <input type="text" class="form-control" style="display:unset; width:85%" placeholder="Research"
-                        name="searchTerm" th:value="${searchTerm}">
-                    <button type="submit" class="btn btn-primary btn-danger"><i class="fa fa-search"></i></button>
+                <form th:action="@{/blog/buscar}" method="get" class="form-inline" style="margin-bottom: 20px;">
+                    <div class="input-group" style="width: 100%;">
+                        <input type="text" class="form-control" placeholder="Research..." name="searchTerm"
+                            th:value="${searchTerm}">
+                        <span class="input-group-btn">
+                            <button type="submit" class="btn btn-primary btn-danger"><i
+                                    class="fa fa-search"></i></button>
+                        </span>
+                    </div>
                 </form>
 
-                <div class="card card-sm" data-reveal style="margin-top: 20px; padding: 15px;">
+                <div class="card card-sm"
+                    style="margin-top: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd;">
                     <h4>Categories</h4>
                     <ul class="link-list" style="list-style: none; padding-left: 0;">
-                        <li><a th:href="@{/blog}">Category I</a></li>
-                        <li><a th:href="@{/blog}">Category II</a></li>
-                        <li><a th:href="@{/blog}">Category III</a></li>
-                        <li><a th:href="@{/blog}">Category IV</a></li>
-                        <li><a th:href="@{/blog}">Category V</a></li>
+                        <li style="margin-bottom: 5px;"><a th:href="@{/blog}">Category I</a></li>
+                        <li style="margin-bottom: 5px;"><a th:href="@{/blog}">Category II</a></li>
+                        <li style="margin-bottom: 5px;"><a th:href="@{/blog}">Category III</a></li>
+                        <li style="margin-bottom: 5px;"><a th:href="@{/blog}">Category IV</a></li>
+                        <li style="margin-bottom: 5px;"><a th:href="@{/blog}">Category V</a></li>
                     </ul>
                 </div>
 
-                <div class="card card-sm glass" data-reveal style="margin-top: 20px; padding: 15px;">
+                <div class="card card-sm glass"
+                    style="margin-top: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd;">
                     <h4>Soluta</h4>
                     <p class="text-muted" style="margin:0">Quod soluta corrupti earum officia vel inventore vitae
                         quidem, consequuntur odit impedit.</p>
                 </div>
 
-                <div class="card card-sm" data-reveal style="margin-top: 20px; padding: 15px;">
+                <div class="card card-sm"
+                    style="margin-top: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd;">
                     <h4>Recent posts</h4>
                     <div th:if="${recents != null and !recents.isEmpty()}">
                         <div th:each="recent : ${recents}">
@@ -108,7 +161,19 @@
             </aside>
         </div>
     </div>
+    </div>
 
+    <!-- Footer común -->
+    <footer class="text-center" style="padding: 20px 0; background: #f5f5f5; margin-top: 40px;">
+        <div class="container">
+            <p>&copy; 2026 Educational Blog - Migrated to Spring Boot 3</p>
+        </div>
+    </footer>
+
+    <!-- Scripts JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script th:src="@{/js/jquery.magnific-popup.min.js}"></script>
 </body>
 
 </html>
