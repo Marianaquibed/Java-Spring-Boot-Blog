@@ -1,105 +1,81 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educational Blog - Contact Us</title>
+    <link rel="stylesheet" th:href="@{/css/magnific-popup.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
 
 <body>
-
-    <!-- Bloque de contenido inyectado en la plantilla base -->
-    <div th:fragment="content" id="contact">
+    <!-- Navegación común -->
+    <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container">
-            <div class="col-xs-12 col-sm-8 col-sm-push-2">
-                <h1>CONTACT US</h1>
-                <hr>
-                <p>Aut eaque, laboriosam veritatis, quos non quis ad perspiciatis, totam corporis ea, alias ut unde.</p>
+            <div class="navbar-header">
+                <a class="navbar-brand" th:href="@{/}">My Blog</a>
+            </div>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a th:href="@{/}">Home</a></li>
+                <li><a th:href="@{/blog}">Blog</a></li>
+                <li><a th:href="@{/about}">About</a></li>
+                <li><a th:href="@{/contact}">Contact</a></li>
+                <li sec:authorize="!isAuthenticated()"><a th:href="@{/login}">Login</a></li>
+                <li sec:authorize="!isAuthenticated()"><a th:href="@{/register}">Register</a></li>
+                <li sec:authorize="isAuthenticated()">
+                    <form th:action="@{/logout}" method="post" style="display:inline; margin-top: 8px;">
+                        <button type="submit" class="btn btn-default navbar-btn">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </nav>
 
-                <!-- Formulario de contacto en Thymeleaf vinculado a ${contact} -->
-                <form th:action="@{/contact}" th:object="${contact}" method="post" class="form-horizontal">
-
-                    <!-- Mensaje global de error opcional si falla algo a nivel general -->
-                    <div th:if="${#fields.hasGlobalErrors()}">
-                        <p class="text-danger" th:each="err : ${#fields.globalErrors()}" th:text="${err}">Error global
-                        </p>
-                    </div>
-
-                    <!-- Fila: First Name y Last Name -->
-                    <div class="form-group"
-                        th:classappend="${#fields.hasErrors('firstName') or #fields.hasErrors('lastName')} ? 'has-error' : ''">
-                        <div class="col-xs-6">
-                            <label for="firstName" class="control-label">First Name</label>
-                            <input type="text" id="firstName" th:field="*{firstName}" class="form-control"
-                                placeholder="First Name">
-                            <span class="text-danger" th:if="${#fields.hasErrors('firstName')}"
-                                th:errors="*{firstName}">Error First Name</span>
-                        </div>
-                        <div class="col-xs-6">
-                            <label for="lastName" class="control-label">Last Name</label>
-                            <input type="text" id="lastName" th:field="*{lastName}" class="form-control"
-                                placeholder="Last Name">
-                            <span class="text-danger" th:if="${#fields.hasErrors('lastName')}"
-                                th:errors="*{lastName}">Error Last Name</span>
-                        </div>
-                    </div>
-
-                    <!-- Campo: Email -->
-                    <div class="form-group" th:classappend="${#fields.hasErrors('email')} ? 'has-error' : ''">
-                        <div class="col-xs-12">
-                            <label for="email" class="control-label">Email</label>
-                            <input type="email" id="email" th:field="*{email}" class="form-control"
-                                placeholder="Email address">
-                            <span class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Error
-                                Email</span>
-                        </div>
-                    </div>
-
-                    <!-- Campo: Subject -->
-                    <div class="form-group" th:classappend="${#fields.hasErrors('subject')} ? 'has-error' : ''">
-                        <div class="col-xs-12">
-                            <label for="subject" class="control-label">Subject</label>
-                            <input type="text" id="subject" th:field="*{subject}" class="form-control"
-                                placeholder="Subject">
-                            <span class="text-danger" th:if="${#fields.hasErrors('subject')}"
-                                th:errors="*{subject}">Error Subject</span>
-                        </div>
-                    </div>
-
-                    <!-- Campo: Message y Botón de Enviar -->
-                    <div class="form-group" th:classappend="${#fields.hasErrors('message')} ? 'has-error' : ''">
-                        <div class="col-xs-12">
-                            <label for="message" class="control-label">Message</label>
-                            <textarea id="message" th:field="*{message}" class="form-control" rows="5"
-                                placeholder="Your message..."></textarea>
-                            <span class="text-danger" th:if="${#fields.hasErrors('message')}"
-                                th:errors="*{message}">Error Message</span>
-
-                            <button type="submit" class="pull-right btn btn-lg sr-button"
-                                style="margin-top: 15px;">SEND</button>
-                        </div>
-                    </div>
-                </form>
-
-                <hr class="divider">
-                <div class="address">
-                    <h3>GET IN TOUCH</h3>
-                    <hr>
-                    <p>Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero.
-                    </p>
-                    <div class="ending text-center">
-                        <ul class="list-inline social-buttons">
-                            <li><a href="#"><i class="fa fa-facebook sr-icons"></i></a></li>
-                            <li><a href="#"><i class="fa fa-twitter sr-icons"></i></a></li>
-                            <li><a href="#"><i class="fa fa-google-plus sr-icons"></i></a></li>
-                        </ul>
-                        <ul class="list-inline contact">
-                            <li class="footer-number"><i class="fa fa-phone sr-icons"></i> (00228)92229954 </li>
-                            <li><a href="mailto:kouvenceslas93@gmail.com"><i class="fa fa-envelope sr-icons"></i>
-                                    kouvenceslas93@gmail.com</a></li>
-                        </ul>
-                        <p>Photography Fanatic Template &copy; 2017</p>
+    <!-- Contenido -->
+    <div class="container" style="min-height: 70vh; padding-top: 90px; padding-bottom: 50px;">
+        <div class="col-xs-12 col-sm-8 col-sm-push-2">
+            <h1>CONTACT US</h1>
+            <hr>
+            <form th:action="@{/contact}" th:object="${contact}" method="post" class="form-horizontal">
+                <div class="form-group" th:classappend="${#fields.hasErrors('firstName')} ? 'has-error' : ''">
+                    <div class="col-xs-12">
+                        <label for="firstName" class="control-label">First Name</label>
+                        <input type="text" id="firstName" th:field="*{firstName}" class="form-control"
+                            placeholder="First Name">
                     </div>
                 </div>
-            </div>
+                <div class="form-group" th:classappend="${#fields.hasErrors('email')} ? 'has-error' : ''">
+                    <div class="col-xs-12">
+                        <label for="email" class="control-label">Email</label>
+                        <input type="email" id="email" th:field="*{email}" class="form-control"
+                            placeholder="Email address">
+                    </div>
+                </div>
+                <div class="form-group" th:classappend="${#fields.hasErrors('message')} ? 'has-error' : ''">
+                    <div class="col-xs-12">
+                        <label for="message" class="control-label">Message</label>
+                        <textarea id="message" th:field="*{message}" class="form-control" rows="5"
+                            placeholder="Your message..."></textarea>
+                        <button type="submit" class="pull-right btn btn-lg sr-button"
+                            style="margin-top: 15px;">SEND</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 
+    <footer class="text-center" style="padding: 20px 0; background: #f5f5f5; margin-top: 40px;">
+        <div class="container">
+            <p>&copy; 2026 Educational Blog - Migrated to Spring Boot 3</p>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script th:src="@{/js/jquery.magnific-popup.min.js}"></script>
 </body>
 
 </html>
