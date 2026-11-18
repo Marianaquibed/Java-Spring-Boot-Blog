@@ -4,10 +4,9 @@
 <body>
 
     <!-- Fragmento parcial reutilizable de comentarios -->
-    <div th:fragment="commentFragment" class="comment"
-        th:classappend="${iterStat != null and iterStat.odd} ? 'alt-comment' : ''">
+    <div th:fragment="commentFragment" class="comment">
 
-        <h4 th:text="${comment.author}">Author Name</h4>
+        <h4 th:text="${comment.name}">Author Name</h4>
 
         <span>
             <i class="fa fa-star sr-icons"></i>
@@ -17,12 +16,13 @@
             <i class="fa fa-star sr-icons"></i>
         </span>
 
-        <!-- Formato de hora con Thymeleaf (#temporals) -->
-        <p class="time" th:text="${#temporals.format(comment.publishedAt, 'hh:mm a')}">12:00 PM</p>
+        <!-- Fecha y hora del comentario -->
+        <p class="time" th:if="${comment.publishedAt != null}"
+            th:text="${#temporals.format(comment.publishedAt, 'dd/MM/yyyy HH:mm')}">01/01/2026 12:00</p>
         <hr>
 
-        <!-- Contenido del comentario -->
-        <p th:text="${comment.content}">Comment text goes here...</p>
+        <!-- Contenido del comentario (th:text escapa HTML) -->
+        <p th:text="${comment.text}">Comment text goes here...</p>
     </div>
 
 </body>

@@ -29,6 +29,11 @@
                 <li><a th:href="@{/about}">About</a></li>
                 <li><a th:href="@{/contact}">Contact</a></li>
 
+                <!-- Solo usuarios logueados: crear post -->
+                <li sec:authorize="isAuthenticated()">
+                    <a th:href="@{/blog/new}">New Post</a>
+                </li>
+
                 <!-- Si el usuario es ADMIN -->
                 <li sec:authorize="hasRole('ADMIN')">
                     <a th:href="@{/admin/categories}">Admin Categories</a>
@@ -45,6 +50,9 @@
                     <a th:href="@{/register}">Register</a>
                 </li>
                 <li sec:authorize="isAuthenticated()">
+                    <p class="navbar-text">Hola, <span sec:authentication="name">usuario</span></p>
+                </li>
+                <li sec:authorize="isAuthenticated()">
                     <form th:action="@{/logout}" method="post" style="display:inline; margin-top: 8px;">
                         <button type="submit" class="btn btn-default navbar-btn">Logout</button>
                     </form>
@@ -56,7 +64,14 @@
     <!-- Contenido Principal -->
     <div class="container" style="min-height: 70vh; padding-top: 90px; padding-bottom: 50px;">
         <div id="blog">
-            <header class="page-header-block" style="margin-bottom: 30px;">
+
+            <header class="page-header-block" style="margin-bottom: 30px; overflow: hidden;">
+                <!-- Botón crear post (solo logueados) -->
+                <a sec:authorize="isAuthenticated()" th:href="@{/blog/new}" class="btn btn-primary pull-right"
+                    style="margin-top: 10px;">
+                    <i class="fa fa-plus"></i> New Post
+                </a>
+
                 <span class="eyebrow"
                     style="text-transform: uppercase; font-size: 12px; color: #777; letter-spacing: 1px;">Journal</span>
                 <div th:if="${searchTerm != null and searchTerm != ''}">
@@ -78,89 +93,106 @@
                                 style="padding: 10px 15px; background: #f9f9f9; border: 1px solid #ddd; margin-bottom: 20px;">
                                 <span class="results-count">
                                     <i class="fa fa-file-text-o"></i>
-                                    Mostrando <strong th:text="${posts.size()}">0</strong> de <strong
-                                        th:text="${total}">0</strong> <span
-                                        th:text="${total == 1 ? 'post' : 'posts'}">posts</span>
+                                    Mostrando <strong th:text="${posts.size()}">0</strong> de
+                                    <strong th:text="${total}">0</strong>
+                                    <span th:text="${total == 1 ? 'post' : 'posts'}">posts</span>
                                 </span>
-                                <span class="results-page" style="margin-left: 15px;">Página <span
-                                        th:text="${page}">1</span> <span class="results-sep">/</span> <span
-                                        th:text="${totalPages}">1</span></span>
+                                <span class="results-page" style="margin-left: 15px;">Página
+                                    <span th:text="${page}">1</span> <span class="results-sep">/</span>
+                                    <span th:text="${totalPages}">1</span></span>
                             </div>
-                            <br>
 
                             <!-- Bucle de posts -->
                             <div th:each="post : ${posts}">
                                 <div th:replace="~{partials/_post :: postFragment}"></div>
                             </div>
 
-                            <!-- Paginación condicional (Verifica si existen los partials o usa paginación estándar si falla) -->
-                            <div th:if="${searchTerm != null and searchTerm != ''}">
-                                <div th:if="${#lists.contains(@environment.defaultProfiles, 'none')}" /* fallback seguro
-                                    si no existe el partial * />
+                            <!-- Paginación (la página va en la ruta: /blog/2 o /blog/buscar/2?searchTerm=...) -->
+                            <nav th:if="${totalPages > 1}" aria-label="Paginación">
+                                <ul class="pager">
+
+                                    <!-- Anterior -->
+                                    <li class="previous" th:classappend="${page <= 1} ? 'disabled'">
+                                        <a th:if="${page > 1}"
+                                            th:href="${searchTerm != null and searchTerm != ''} ? @{/blog/buscar/{p}(p=${page - 1}, searchTerm=${searchTerm})} : @{/blog/{p}(p=${page - 1})}">
+                                            <i class="fa fa-arrow-left"></i> Anterior
+                                        </a>
+                                        <span th:unless="${page > 1}">
+                                            <i class="fa fa-arrow-left"></i> Anterior
+                                        </span>
+                                    </li>
+
+                                    <!-- Siguiente -->
+                                    <li class="next" th:classappend="${page >= totalPages} ? 'disabled'">
+                                        <a th:if="${page < totalPages}"
+                                            th:href="${searchTerm != null and searchTerm != ''} ? @{/blog/buscar/{p}(p=${page + 1}, searchTerm=${searchTerm})} : @{/blog/{p}(p=${page + 1})}">
+                                            Siguiente <i class="fa fa-arrow-right"></i>
+                                        </a>
+                                        <span th:unless="${page < totalPages}">
+                                            Siguiente <i class="fa fa-arrow-right"></i>
+                                        </span>
+                                    </li>
+
+                                </ul>
+                            </nav>
+                        </div>
+
+                        <!-- Si NO hay posts -->
+                        <div th:unless="${total > 0}">
+                            <div class="card empty-state"
+                                style="padding: 30px; text-align: center; background: #f9f9f9; border: 1px solid #ddd;">
+                                <i class="fa fa-search" style="font-size: 24px; margin-bottom: 10px;"></i>
+                                <p>No posts found.</p>
+                                <a sec:authorize="isAuthenticated()" th:href="@{/blog/new}"
+                                    class="btn btn-primary">Create the first post</a>
                             </div>
                         </div>
+
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <aside class="col-xs-12 col-md-4 sidebar">
+                    <!-- Formulario de búsqueda GET -->
+                    <form th:action="@{/blog/buscar}" method="get" class="form-inline" style="margin-bottom: 20px;">
+                        <div class="input-group" style="width: 100%;">
+                            <input type="text" class="form-control" placeholder="Research..." name="searchTerm"
+                                th:value="${searchTerm}">
+                            <span class="input-group-btn">
+                                <button type="submit" class="btn btn-primary btn-danger"><i
+                                        class="fa fa-search"></i></button>
+                            </span>
+                        </div>
+                    </form>
+
+                    <div class="card card-sm"
+                        style="margin-top: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd;">
+                        <h4>Categories</h4>
+                        <ul class="link-list" style="list-style: none; padding-left: 0;">
+                            <li style="margin-bottom: 5px;"><a th:href="@{/blog}">Category I</a></li>
+                            <li style="margin-bottom: 5px;"><a th:href="@{/blog}">Category II</a></li>
+                            <li style="margin-bottom: 5px;"><a th:href="@{/blog}">Category III</a></li>
+                            <li style="margin-bottom: 5px;"><a th:href="@{/blog}">Category IV</a></li>
+                            <li style="margin-bottom: 5px;"><a th:href="@{/blog}">Category V</a></li>
+                        </ul>
                     </div>
 
-                    <!-- Si NO hay posts -->
-                    <div th:unless="${total > 0}">
-                        <div class="card empty-state"
-                            style="padding: 30px; text-align: center; background: #f9f9f9; border: 1px solid #ddd;">
-                            <i class="fa fa-search" style="font-size: 24px; margin-bottom: 10px;"></i>
-                            <p>No posts found.</p>
+                    <div class="card card-sm"
+                        style="margin-top: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd;">
+                        <h4>Recent posts</h4>
+                        <div th:if="${recents != null and !recents.isEmpty()}">
+                            <div th:each="recent : ${recents}">
+                                <div th:replace="~{partials/_recent_post :: recentPostFragment}"></div>
+                            </div>
+                        </div>
+                        <div th:unless="${recents != null and !recents.isEmpty()}">
+                            <p class="text-muted" style="margin:0">No recent posts yet.</p>
                         </div>
                     </div>
-
-                </div>
+                </aside>
             </div>
 
-            <!-- Sidebar -->
-            <aside class="col-xs-12 col-md-4 sidebar">
-                <!-- Formulario de búsqueda GET -->
-                <form th:action="@{/blog/buscar}" method="get" class="form-inline" style="margin-bottom: 20px;">
-                    <div class="input-group" style="width: 100%;">
-                        <input type="text" class="form-control" placeholder="Research..." name="searchTerm"
-                            th:value="${searchTerm}">
-                        <span class="input-group-btn">
-                            <button type="submit" class="btn btn-primary btn-danger"><i
-                                    class="fa fa-search"></i></button>
-                        </span>
-                    </div>
-                </form>
-
-                <div class="card card-sm"
-                    style="margin-top: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd;">
-                    <h4>Categories</h4>
-                    <ul class="link-list" style="list-style: none; padding-left: 0;">
-                        <li style="margin-bottom: 5px;"><a th:href="@{/blog}">Category I</a></li>
-                        <li style="margin-bottom: 5px;"><a th:href="@{/blog}">Category II</a></li>
-                        <li style="margin-bottom: 5px;"><a th:href="@{/blog}">Category III</a></li>
-                        <li style="margin-bottom: 5px;"><a th:href="@{/blog}">Category IV</a></li>
-                        <li style="margin-bottom: 5px;"><a th:href="@{/blog}">Category V</a></li>
-                    </ul>
-                </div>
-
-                <div class="card card-sm glass"
-                    style="margin-top: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd;">
-                    <h4>Soluta</h4>
-                    <p class="text-muted" style="margin:0">Quod soluta corrupti earum officia vel inventore vitae
-                        quidem, consequuntur odit impedit.</p>
-                </div>
-
-                <div class="card card-sm"
-                    style="margin-top: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd;">
-                    <h4>Recent posts</h4>
-                    <div th:if="${recents != null and !recents.isEmpty()}">
-                        <div th:each="recent : ${recents}">
-                            <div th:replace="~{partials/_recent_post :: recentPostFragment}"></div>
-                        </div>
-                    </div>
-                    <div th:unless="${recents != null and !recents.isEmpty()}">
-                        <p class="text-muted" style="margin:0">No recent posts yet.</p>
-                    </div>
-                </div>
-            </aside>
         </div>
-    </div>
     </div>
 
     <!-- Footer común -->
