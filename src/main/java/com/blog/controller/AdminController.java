@@ -21,7 +21,7 @@ import java.util.UUID;
 
 @Controller
 @RequestMapping("/admin")
-@PreAuthorize("hasRole('ADMIN')") // Protege todas las rutas del controlador para que solo accedan administradores
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     @Autowired
@@ -30,59 +30,58 @@ public class AdminController {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    // Directorios donde se guardarán las imágenes
     private final String UPLOAD_DIR = "public/uploads/images/";
     private final String PORTFOLIO_DIR = "public/uploads/portfolio/";
 
     @GetMapping("/images")
     public String images(Model model) {
-        List<Image> images = imageRepository.findAll();
-        model.addAttribute("images", images);
-        model.addAttribute("image", new Image()); // Objeto vacío para el formulario de subida
-        return "admin/images"; // Renderiza templates/admin/images.html
+        model.addAttribute("images", imageRepository.findAll());
+        model.addAttribute("categories", categoryRepository.findAll()); // <-- faltaba
+        return "admin/images";
     }
 
     @PostMapping("/images")
     public String uploadImage(
-            @ModelAttribute("image") Image image,
-            @RequestParam("fileParam") MultipartFile file,
+            @RequestParam("imageFile") MultipartFile file,
+            @RequestParam("categoryId") Long categoryId,
             RedirectAttributes redirectAttributes) {
 
-        if (!file.isEmpty()) {
-            try {
-                // Generar un nombre seguro y único para el archivo
-                String originalFilename = file.getOriginalFilename();
-                String safeFilename = originalFilename != null ? originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_")
-                        : "file";
-                String newFilename = UUID.randomUUID().toString() + "_" + safeFilename;
-
-                // Crear los directorios si no existen
-                Path uploadPath = Paths.get(UPLOAD_DIR);
-                Path portfolioPath = Paths.get(PORTFOLIO_DIR);
-                if (!Files.exists(uploadPath))
-                    Files.createDirectories(uploadPath);
-                if (!Files.exists(portfolioPath))
-                    Files.createDirectories(portfolioPath);
-
-                // Guardar archivo en el directorio de imágenes principal
-                Path filePath = uploadPath.resolve(newFilename);
-                Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-                // Copiar el archivo al directorio de portfolio
-                Path portfolioFilePath = portfolioPath.resolve(newFilename);
-                Files.copy(filePath, portfolioFilePath, StandardCopyOption.REPLACE_EXISTING);
-
-                // Asignar el nombre del archivo a la entidad
-                image.setFile(newFilename);
-
-            } catch (IOException e) {
-                redirectAttributes.addFlashAttribute("error", "Error al subir el archivo: " + e.getMessage());
-                return "redirect:/admin/images";
-            }
+        if (file.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Selecciona un archivo.");
+            return "redirect:/admin/images";
         }
 
-        // Guardar la entidad Image en la base de datos
-        imageRepository.save(image);
+        Category category = categoryRepository.findById(categoryId).orElse(null);
+        if (category == null) {
+            redirectAttributes.addFlashAttribute("error", "La categoría seleccionada no existe.");
+            return "redirect:/admin/images";
+        }
+
+        try {
+            String originalFilename = file.getOriginalFilename();
+            String safeFilename = originalFilename != null
+                    ? originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_")
+                    : "file";
+            String newFilename = UUID.randomUUID() + "_" + safeFilename;
+
+            Path uploadPath = Paths.get(UPLOAD_DIR);
+            Path portfolioPath = Paths.get(PORTFOLIO_DIR);
+            Files.createDirectories(uploadPath);
+            Files.createDirectories(portfolioPath);
+
+            Path filePath = uploadPath.resolve(newFilename);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(filePath, portfolioPath.resolve(newFilename), StandardCopyOption.REPLACE_EXISTING);
+
+            Image image = new Image();
+            image.setFile(newFilename);
+            image.setCategory(category);
+            imageRepository.save(image);
+
+        } catch (IOException e) {
+            redirectAttributes.addFlashAttribute("error", "Error al subir el archivo: " + e.getMessage());
+        }
+
         return "redirect:/admin/images";
     }
 
@@ -90,19 +89,18 @@ public class AdminController {
     public String categories(Model model) {
         List<Category> categories = categoryRepository.findAll();
         model.addAttribute("categories", categories);
-        model.addAttribute("category", new Category()); // Objeto vacío para el formulario
-        return "admin/categories"; // Renderiza templates/admin/categories.html
+        model.addAttribute("category", new Category());
+        return "admin/categories";
     }
 
     @PostMapping("/categories")
-    public String createCategory(@Valid @ModelAttribute("category") Category category, BindingResult bindingResult,
-            Model model) {
+    public String createCategory(@Valid @ModelAttribute("category") Category category,
+            BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("categories", categoryRepository.findAll());
-            return "admin/categories"; // Recarga la vista con errores si falla la validación
+            return "admin/categories";
         }
-
         categoryRepository.save(category);
-        return "redirect:/admin/categories"; // Redirección para evitar reenvío de formulario
+        return "redirect:/admin/categories";
     }
 }
