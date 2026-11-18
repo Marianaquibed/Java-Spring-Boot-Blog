@@ -33,6 +33,7 @@ public class SecurityConfig {
                         .requestMatchers("/blog/new").authenticated()
                         .requestMatchers("/", "/blog", "/blog/buscar", "/blog/**", "/single_post/**",
                                 "/about", "/contact", "/thankyou", "/register", "/login",
+                                "/error", "/favicon.ico",
                                 "/css/**", "/js/**", "/images/**", "/uploads/**",
                                 "/bootstrap/**", "/font-awesome/**", "/Documentation/**")
                         .permitAll()

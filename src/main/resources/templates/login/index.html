@@ -29,6 +29,11 @@
                 <li><a th:href="@{/about}">About</a></li>
                 <li><a th:href="@{/contact}">Contact</a></li>
 
+                <!-- Solo usuarios logueados: crear post -->
+                <li sec:authorize="isAuthenticated()">
+                    <a th:href="@{/blog/new}">New Post</a>
+                </li>
+
                 <!-- Si el usuario es ADMIN -->
                 <li sec:authorize="hasRole('ADMIN')">
                     <a th:href="@{/admin/categories}">Admin Categories</a>
@@ -45,6 +50,9 @@
                     <a th:href="@{/register}">Register</a>
                 </li>
                 <li sec:authorize="isAuthenticated()">
+                    <p class="navbar-text">Hola, <span sec:authentication="name">usuario</span></p>
+                </li>
+                <li sec:authorize="isAuthenticated()">
                     <form th:action="@{/logout}" method="post" style="display:inline; margin-top: 8px;">
                         <button type="submit" class="btn btn-default navbar-btn">Logout</button>
                     </form>
@@ -58,26 +66,31 @@
         <div class="row">
             <div class="col-xs-12 col-sm-6 col-sm-push-3">
 
+                <!-- Si el usuario ya está logueado (fuera del formulario de login) -->
+                <div sec:authorize="isAuthenticated()" class="alert alert-info" style="margin-bottom: 20px;">
+                    Has iniciado sesión como <span sec:authentication="name">User</span>.
+                    <form th:action="@{/logout}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-link" style="padding:0;">Cerrar sesión</button>
+                    </form>
+                </div>
+
                 <!-- Formulario de inicio de sesión de Spring Security -->
                 <form th:action="@{/login}" method="post"
                     style="background: #fff; padding: 30px; border: 1px solid #ddd; border-radius: 4px;">
 
-                    <!-- Mensaje de error (por parámetro URL o por el controlador) -->
-                    <div th:if="${param.error or error != null}" class="alert alert-danger"
-                        style="margin-bottom: 20px;">
-                        <span th:text="${error != null ? error : 'Invalid username or password.'}">Invalid username or
-                            password.</span>
+                    <!-- Mensaje de error (showError lo envía el LoginController si la URL lleva ?error) -->
+                    <div th:if="${showError}" class="alert alert-danger" style="margin-bottom: 20px;">
+                        Usuario o contraseña inválidos.
                     </div>
 
-                    <!-- Mensaje informativo de logout exitoso (?logout) -->
-                    <div th:if="${param.logout}" class="alert alert-success" style="margin-bottom: 20px;">
-                        You have been logged out successfully.
+                    <!-- Mensaje de logout (showLogout lo envía el LoginController si la URL lleva ?logout) -->
+                    <div th:if="${showLogout}" class="alert alert-success" style="margin-bottom: 20px;">
+                        Has cerrado sesión correctamente.
                     </div>
 
-                    <!-- Si el usuario ya está logueado -->
-                    <div sec:authorize="isAuthenticated()" class="alert alert-info" style="margin-bottom: 20px;">
-                        You are logged in as <span sec:authentication="name">User</span>.
-                        <a th:href="@{/logout}">Logout</a>
+                    <!-- Mensaje de registro completado (enviado por LoginController) -->
+                    <div th:if="${successMessage != null}" class="alert alert-success" style="margin-bottom: 20px;">
+                        <span th:text="${successMessage}">Registro completado.</span>
                     </div>
 
                     <h1 class="h3 mb-3 font-weight-normal" style="margin-top: 0;">Please sign in</h1>
@@ -85,9 +98,8 @@
 
                     <div class="form-group" style="margin-bottom: 15px;">
                         <label for="username">Email</label>
-                        <input type="email" id="username" name="username" class="form-control"
-                            th:value="${last_username}" autocomplete="email" required autofocus
-                            placeholder="Email address">
+                        <input type="email" id="username" name="username" class="form-control" autocomplete="email"
+                            required autofocus placeholder="Email address">
                     </div>
 
                     <div class="form-group" style="margin-bottom: 20px;">
